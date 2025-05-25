@@ -1,0 +1,114 @@
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+
+local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+screenGui.Name = "ServerInfoUI"
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 340, 0, 190)
+mainFrame.Position = UDim2.new(1, -360, 0, 20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(252, 239, 255) 
+mainFrame.Active = true
+mainFrame.Draggable = true
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+
+
+local titleLabel = Instance.new("TextLabel", mainFrame)
+titleLabel.Size = UDim2.new(1, -40, 0, 30)
+titleLabel.Position = UDim2.new(0, 10, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 182, 193) 
+titleLabel.Text = "🤡 さーばーいんふぉ 🤡"
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+
+local closeButton = Instance.new("TextButton", mainFrame)
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.Text = "✖"
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 18
+Instance.new("UICorner", closeButton).CornerRadius = UDim.new(1, 0)
+
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+
+local function createLabel(yOffset, text)
+	local label = Instance.new("TextLabel", mainFrame)
+	label.Size = UDim2.new(1, -20, 0, 25)
+	label.Position = UDim2.new(0, 10, 0, yOffset)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 16
+	label.TextColor3 = Color3.fromRGB(90, 62, 116) 
+	label.Text = text
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	return label
+end
+
+
+local playersLabel = createLabel(45, "")
+local maxPlayersLabel = createLabel(70, "")
+local serverTimeLabel = createLabel(95, "")
+local gameNameLabel = createLabel(120, "")
+gameNameLabel.Size = UDim2.new(0, 280, 0, 25)
+
+
+local copyButton = Instance.new("TextButton", mainFrame)
+copyButton.Size = UDim2.new(0, 30, 0, 25)
+copyButton.Position = UDim2.new(0, 290, 0, 120)
+copyButton.BackgroundColor3 = Color3.fromRGB(243, 193, 224) 
+copyButton.TextColor3 = Color3.new(1, 1, 1)
+copyButton.Font = Enum.Font.GothamBold
+copyButton.TextSize = 18
+copyButton.Text = "📄"
+Instance.new("UICorner", copyButton).CornerRadius = UDim.new(0, 6)
+
+local function copyToClipboard(text)
+	if setclipboard then
+		setclipboard(text)
+	end
+end
+
+local gameUrl = "https://www.roblox.com/games/" .. tostring(game.PlaceId)
+copyButton.MouseButton1Click:Connect(function()
+	copyToClipboard(gameUrl)
+	copyButton.Text = "✔️"
+	task.wait(1)
+	copyButton.Text = "📄"
+end)
+
+
+local startTime = tick()
+
+local function updateInfo()
+	local elapsedTime = math.floor((tick() - startTime) / 60)
+	playersLabel.Text = "現在のプレイヤー数: " .. tostring(#Players:GetPlayers())
+	maxPlayersLabel.Text = "最大プレイヤー数: " .. tostring(Players.MaxPlayers)
+	serverTimeLabel.Text = "このScriptを起動してから " .. tostring(elapsedTime) .. " 分"
+
+	local success, info = pcall(function()
+		return MarketplaceService:GetProductInfo(game.PlaceId)
+	end)
+
+	if success and info then
+		gameNameLabel.Text = "ゲーム名: " .. info.Name
+	end
+end
+
+
+updateInfo()
+while screenGui.Parent do
+	task.wait(30)
+	updateInfo()
+end
